@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>风险因素占比 - 原始尺寸</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 必须保留深色背景，因为原代码中文字颜色设置为白色 (#fff) */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #333; }
+        #main { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+
+    <script type="text/javascript">
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+
+        option = {
+            legend: {
+                top: 'bottom',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    mark: { show: true },
+                    dataView: { show: true, readOnly: false },
+                    restore: { show: true },
+                    saveAsImage: { show: true }
+                }
+            },
+            series: [
+                {
+                    name: 'Nightingale Chart',
+                    type: 'pie',
+                    // 这里完全保留了你原始代码中的尺寸 [30, 70]
+                    radius: [30, 70],
+                    center: ['50%', '45%'],
+                    roseType: 'area',
+                    itemStyle: {
+                        borderRadius: 8
+                    },
+                    data: (function() {
+                        var rawData = [
+                            { value: 40, name: '支护结构' },
+                            { value: 38, name: '基坑土体' },
+                            { value: 32, name: '周边建筑物' },
+                            { value: 30, name: '周边地下管线' },
+                            { value: 28, name: '周边地表' },
+                            { value: 26, name: '周边路面' },
+                            { value: 22, name: '周边桥梁' },
+                            { value: 18, name: '周边隧道' }
+                        ];
+                        var total = rawData.reduce((sum, item) => sum + item.value, 0);
+                        return rawData.map(item => {
+                            var percentage = (item.value / total * 100).toFixed(0);
+                            return {
+                                value: item.value,
+                                name: `${item.name} ${percentage}%`
+                            };
+                        });
+                    })()
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+        window.onresize = function() { myChart.resize(); };
+    </script>
+</body>
+</html>
