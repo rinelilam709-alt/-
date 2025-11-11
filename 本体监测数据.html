@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>位移监测图表</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 设置全屏显示 */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #333; }
+        #main { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+
+    <script type="text/javascript">
+        // 初始化图表
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+
+        // 配置项 (源自你提供的逻辑)
+        option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross', crossStyle: { color: '#999' } }
+            },
+            legend: {
+                data: ['水平位移', '竖向位移', '水平位移警示线', '竖向位移警示线'],
+                bottom: 5,
+                textStyle: { color: '#ffffff' }
+            },
+            grid: {
+                left: '10%', right: '5%', bottom: '15%', top: '20%', containLabel: true
+            },
+            xAxis: [{
+                type: 'category',
+                data: ['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05', '2023-01-06', '2023-01-07', '2023-01-08', '2023-01-09', '2023-01-10'],
+                axisPointer: { type: 'shadow' },
+                axisLine: { lineStyle: { color: '#ffffff' } },
+                axisLabel: { color: '#ffffff' }
+            }],
+            yAxis: [
+                {
+                    type: 'value', name: '顶部水平位移 (mm)', min: 0, max: 50, interval: 10,
+                    nameTextStyle: { color: '#ffffff' },
+                    axisLine: { lineStyle: { color: '#ffffff' } },
+                    axisLabel: { formatter: '{value}', color: '#ffffff' },
+                    splitLine: { lineStyle: { color: '#fff', opacity: 0.2 } } // 稍微调低透明度美化
+                },
+                {
+                    type: 'value', name: '顶部竖向位移 (mm)', min: 0, max: 50, interval: 10,
+                    nameTextStyle: { color: '#ffffff' },
+                    axisLine: { lineStyle: { color: '#ffffff' } },
+                    axisLabel: { formatter: '{value}', color: '#ffffff' },
+                    splitLine: { show: false }
+                }
+            ],
+            series: (function() {
+                var seriesData = [];
+                // 模拟数据逻辑
+                for (var i = 1; i <= 5; i++) {
+                    seriesData.push({
+                        name: '水平位移', type: 'line', smooth: true, yAxisIndex: 0,
+                        lineStyle: { color: '#5470C6' }, itemStyle: { color: '#5470C6' },
+                        data: Array.from({length: 10}, () => Math.random() * 20 + 5)
+                    });
+                }
+                for (var i = 1; i <= 5; i++) {
+                    seriesData.push({
+                        name: '竖向位移', type: 'line', smooth: true, yAxisIndex: 1,
+                        lineStyle: { color: '#91CC75' }, itemStyle: { color: '#91CC75' },
+                        data: Array.from({length: 10}, () => Math.random() * 20 + 10)
+                    });
+                }
+                // 警示线
+                seriesData.push({
+                    name: '水平位移警示线', type: 'line', yAxisIndex: 0,
+                    data: Array(10).fill(40),
+                    lineStyle: { color: '#FF0000', width: 2, type: 'dashed' }, symbol: 'none'
+                });
+                seriesData.push({
+                    name: '竖向位移警示线', type: 'line', yAxisIndex: 1,
+                    data: Array(10).fill(45),
+                    lineStyle: { color: '#FFC000', width: 2, type: 'dashed' }, symbol: 'none'
+                });
+                return seriesData;
+            })()
+        };
+
+        myChart.setOption(option);
+        // 窗口大小改变时自动调整图表
+        window.onresize = function() { myChart.resize(); };
+    </script>
+</body>
+</html>
