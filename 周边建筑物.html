@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监测数据切换展示</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 深色背景，适配白色文字 */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #333; }
+        #main { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+
+    <script type="text/javascript">
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+
+        // --- 配置项 1 (位移/沉降/速率) ---
+        var option1 = {
+            tooltip: { trigger: 'axis' },
+            legend: {
+                data: ['位移累计值', '沉降值', '结构性裂缝累计值', '位移速率'],
+                bottom: 35,
+                textStyle: { color: '#ffffff' }
+            },
+            grid: { left: '5%', right: '5%', bottom: '25%', top: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'],
+                axisLine: { lineStyle: { color: '#ffffff' } },
+                axisLabel: { color: '#ffffff' }
+            },
+            yAxis: [
+                {
+                    type: 'value', name: '累计值 (mm)', nameTextStyle: { color: '#ffffff' },
+                    axisLine: { lineStyle: { color: '#ffffff' } }, axisLabel: { color: '#ffffff' },
+                    splitLine: { lineStyle: { color: '#fff', opacity: 0.2 } }
+                },
+                {
+                    type: 'value', name: '速率 (mm/天)', nameTextStyle: { color: '#ffffff' },
+                    axisLine: { lineStyle: { color: '#ffffff' } }, axisLabel: { color: '#ffffff' },
+                    splitLine: { show: false }
+                }
+            ],
+            dataZoom: [{
+                type: 'slider', bottom: 5, height: 20,
+                backgroundColor: 'rgba(255,255,255,0.1)', fillerColor: 'rgba(255,255,255,0.2)',
+                textStyle: { color: '#ccc' }
+            }],
+            series: [
+                { name: '位移累计值', type: 'line', yAxisIndex: 0, smooth: true, data: [10, 15, 18, 22, 25, 28, 30, 32] },
+                { name: '沉降值', type: 'line', yAxisIndex: 0, smooth: true, data: [5, 8, 10, 12, 14, 16, 17, 18] },
+                { name: '结构性裂缝累计值', type: 'line', yAxisIndex: 0, smooth: true, data: [2, 3, 4, 5, 6, 7, 8, 9] },
+                { name: '位移速率', type: 'line', yAxisIndex: 1, smooth: true, data: [0.5, 0.6, 0.4, 0.7, 0.5, 0.6, 0.3, 0.4] }
+            ]
+        };
+
+        // --- 配置项 2 (倾斜度/裂缝趋势) ---
+        var option2 = {
+            tooltip: { trigger: 'axis' },
+            legend: {
+                data: ['倾斜度', '结构性裂缝发展趋势'],
+                bottom: 35,
+                textStyle: { color: '#ffffff' }
+            },
+            grid: { left: '5%', right: '5%', bottom: '25%', top: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'],
+                axisLine: { lineStyle: { color: '#ffffff' } },
+                axisLabel: { color: '#ffffff' }
+            },
+            yAxis: [
+                {
+                    type: 'value', name: '倾斜度 (度)', nameTextStyle: { color: '#ffffff' },
+                    axisLine: { lineStyle: { color: '#ffffff' } }, axisLabel: { color: '#ffffff' },
+                    splitLine: { lineStyle: { color: '#fff', opacity: 0.2 } }
+                },
+                {
+                    type: 'value', name: '裂缝发展指数 ', nameTextStyle: { color: '#ffffff' },
+                    axisLine: { lineStyle: { color: '#ffffff' } }, axisLabel: { color: '#ffffff' },
+                    splitLine: { show: false }
+                }
+            ],
+            dataZoom: [{
+                type: 'slider', bottom: 5, height: 20,
+                backgroundColor: 'rgba(255,255,255,0.1)', fillerColor: 'rgba(255,255,255,0.2)',
+                textStyle: { color: '#ccc' }
+            }],
+            series: [
+                { name: '倾斜度', type: 'line', yAxisIndex: 0, smooth: true, data: [0.1, 0.15, 0.2, 0.25, 0.3, 0.32, 0.35, 0.4] },
+                { name: '结构性裂缝发展趋势', type: 'line', yAxisIndex: 1, smooth: true, data: [2, 3, 4, 5, 6, 7, 8, 9] }
+            ]
+        };
+
+        // --- 切换逻辑 ---
+        var options = [option1, option2];
+        var currentOptionIndex = 0;
+
+        var switchButton = {
+            type: 'group',
+            right: 20, top: 20, z: 100,
+            children: [
+                {
+                    type: 'rect', shape: { width: 80, height: 30, r: 5 },
+                    style: { fill: '#fff', stroke: '#ccc', lineWidth: 1 }
+                },
+                {
+                    type: 'text', style: { text: '切换图表', x: 40, y: 15, textAlign: 'center', textVerticalAlign: 'middle', fill: '#333', font: '14px sans-serif' }
+                }
+            ],
+            onclick: function () {
+                currentOptionIndex = (currentOptionIndex + 1) % options.length;
+                // 重新应用 option，并保持不合并模式以彻底刷新
+                myChart.setOption(options[currentOptionIndex], true); 
+            }
+        };
+
+        // 把按钮添加到两个配置中
+        option1.graphic = [switchButton];
+        option2.graphic = [switchButton];
+
+        // 渲染初始图表
+        myChart.setOption(options[currentOptionIndex]);
+
+        // 自适应窗口
+        window.onresize = function() { myChart.resize(); };
+    </script>
+</body>
+</html>
