@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>透明背景预测对比图</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 这里设置 body 背景为深色仅仅是为了让你能看清白色的图表文字。
+           图表本身(#main)是完全透明的。
+           嵌入到其他网页时，图表会直接显示底层的颜色。
+        */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #333; }
+        #main { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+
+    <script type="text/javascript">
+        var chartDom = document.getElementById('main');
+        // init 时不设置 backgroundColor，默认为透明
+        var myChart = echarts.init(chartDom);
+        
+        // --- 数据准备 ---
+        var xAxisData = [
+            '2025-08-29', '2025-09-05', '2025-09-12', '2025-09-19', '2025-09-26', '2025-10-03',
+            '2025-10-10', '2025-10-17', '2025-10-24', '2025-10-31', '2025-11-07', '2025-11-14',
+            '2025-11-21', '2025-11-28', '2025-12-05', '2025-12-12'
+        ];
+        var jdcj_data = [-0.5, -1.2, -2.1, -2.8, -3.6, -4.5, -5.3, -6.0, -6.8, -7.5, -8.3, -9.0, -9.8, -10.5, -11.2, -12.0];
+        var scwy_data = [-0.2, -0.8, -1.5, -2.2, -2.9, -3.7, -4.4, -5.0, -5.7, -6.3, -7.0, -7.6, -8.3, -8.9, -9.6, -10.2];
+        var cjcj_data = [0.8, 1.1, 1.5, 1.3, 1.8, 2.1, 2.5, 2.3, 2.8, 3.1, 2.9, 3.4, 3.2, 3.7, 3.5, 4.0];
+        var zdcj_data = [-1, -2.4, -3.2, -4, -5, -6, -7.5, -8.1, -9.5, -10, -11.5, -12.8, -13.5, -14.2, -15, -16];
+        
+        // --- 数据分割逻辑 (实测 vs 预测) ---
+        var splitIndex = 8;
+        function splitData(data, index) {
+            var monitored = [];
+            var predicted = [];
+            for (var i = 0; i < data.length; i++) {
+                if (i <= index) {
+                    monitored.push(data[i]);
+                    predicted.push(null);
+                } else {
+                    monitored.push(null);
+                    predicted.push(data[i]);
+                }
+            }
+            // 连接点处理，保证线条连续
+            if (index < data.length - 1) {
+                predicted[index] = data[index];
+            }
+            return [monitored, predicted];
+        }
+
+        var jdcj_split = splitData(jdcj_data, splitIndex);
+        var scwy_split = splitData(scwy_data, splitIndex);
+        var cjcj_split = splitData(cjcj_data, splitIndex);
+        var zdcj_split = splitData(zdcj_data, splitIndex);
+
+        // --- 图表配置 ---
+        var option = {
+            // 显式移除 backgroundColor 配置，确保透明
+            backgroundColor: '', 
+            color: ['#5470c6', '#91cc75', '#fac858', '#ee6666'],
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: { backgroundColor: '#6a7985' }
+                }
+            },
+            legend: {
+                data: ['基底沉降', '竖向位移', '基底差异沉降', '基底最大沉降', 
+                { name: '实线——监测数据', icon: 'line' }, 
+                { name: '虚线——预测数据', icon: 'line' }],
+                bottom: 32,
+                textStyle: { color: '#ffffff' } // 白色文字
+            },
+            grid: {
+                left: '3%', right: '4%', bottom: '25%', top: '10%', containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: xAxisData,
+                axisLine: { lineStyle: { color: '#ffffff' } },
+                axisLabel: { color: '#ffffff' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '数值 (mm)',
+                scale: true,
+                nameTextStyle: { color: '#ffffff' },
+                axisLine: { lineStyle: { color: '#ffffff' } },
+                axisLabel: { color: '#ffffff' },
+                splitLine: { lineStyle: { color: '#ffffff', opacity: 0.2 } } // 设置透明度优化视觉
+            },
+            dataZoom: [{
+                type: 'slider',
+                start: 0, end: 100, bottom: 10, height: 20,
+                borderColor: '#555',
+                textStyle: { color: '#ccc' }
+            }],
+            series: [
+                // --- 基底沉降 ---
+                {
+                    name: '基底沉降', type: 'line', smooth: true, showSymbol: true,
+                    lineStyle: { color: '#5470c6', type: 'solid' },
+                    itemStyle: { color: '#5470c6' },
+                    data: jdcj_split[0]
+                },
+                {
+                    name: '基底沉降', type: 'line', smooth: true, showSymbol: true, showInLegend: false,
+                    lineStyle: { color: '#5470c6', type: 'dashed' },
+                    itemStyle: { color: '#5470c6' },
+                    data: jdcj_split[1]
+                },
+                // --- 竖向位移 ---
+                {
+                    name: '竖向位移', type: 'line', smooth: true, showSymbol: true,
+                    lineStyle: { color: '#91cc75', type: 'solid' },
+                    itemStyle: { color: '#91cc75' },
+                    data: scwy_split[0]
+                },
+                {
+                    name: '竖向位移', type: 'line', smooth: true, showSymbol: true, showInLegend: false,
+                    lineStyle: { color: '#91cc75', type: 'dashed' },
+                    itemStyle: { color: '#91cc75' },
+                    data: scwy_split[1]
+                },
+                // --- 基底差异沉降 ---
+                {
+                    name: '基底差异沉降', type: 'line', smooth: true, showSymbol: true,
+                    lineStyle: { color: '#fac858', type: 'solid' },
+                    itemStyle: { color: '#fac858' },
+                    data: cjcj_split[0]
+                },
+                {
+                    name: '基底差异沉降', type: 'line', smooth: true, showSymbol: true, showInLegend: false,
+                    lineStyle: { color: '#fac858', type: 'dashed' },
+                    itemStyle: { color: '#fac858' },
+                    data: cjcj_split[1]
+                },
+                // --- 基底最大沉降 ---
+                {
+                    name: '基底最大沉降', type: 'line', smooth: true, showSymbol: true,
+                    lineStyle: { width: 3, color: '#ee6666', type: 'solid' },
+                    itemStyle: { color: '#ee6666' },
+                    data: zdcj_split[0]
+                },
+                {
+                    name: '基底最大沉降', type: 'line', smooth: true, showSymbol: true, showInLegend: false,
+                    lineStyle: { width: 3, color: '#ee6666', type: 'dashed' },
+                    itemStyle: { color: '#ee6666' },
+                    data: zdcj_split[1]
+                },
+                // --- 图例辅助项 (不显示数据) ---
+                {
+                    name: '实线——监测数据', type: 'line',
+                    lineStyle: { type: 'solid', color: '#ffffff' },
+                    itemStyle: { color: '#ffffff' }, symbolSize: 0, data: []
+                },
+                {
+                    name: '虚线——预测数据', type: 'line',
+                    lineStyle: { type: 'dashed', color: '#ffffff' },
+                    itemStyle: { color: '#ffffff' }, symbolSize: 0, data: []
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+        window.onresize = function() { myChart.resize(); };
+    </script>
+</body>
+</html>
