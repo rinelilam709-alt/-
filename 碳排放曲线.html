@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施工阶段碳排放 - 透明背景</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 设置 body 背景为深色是为了让你能看清图表中的白色文字。
+           图表容器(#main)本身是完全透明的。
+           当嵌入到其他页面时，它会显示你底层的背景色。
+        */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #333; }
+        #main { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+
+    <script type="text/javascript">
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+
+        option = {
+            // 关键：设置图表背景为透明
+            backgroundColor: 'transparent',
+            grid: {
+                left: '5%',
+                right: '5%',
+                bottom: 60, // 底部留白给旋转的文字
+                top: 50,
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: [
+                    '场地平整',
+                    '支护结构施工',
+                    '土方开挖',
+                    '垫层快速封闭',
+                    '基础底板施工',
+                    '拆撑与回填'
+                ],
+                axisLabel: {
+                    interval: 0,
+                    rotate: 30, // 文字倾斜以免重叠
+                    color: '#fff'
+                },
+                axisLine: {
+                    lineStyle: { color: '#fff' }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '碳排放量 (tCO₂)', // 补全名称方便理解
+                nameTextStyle: { 
+                    color: '#fff',
+                    padding: [0, 0, 0, 20] // 调整名称位置
+                },
+                axisLabel: { color: '#fff' },
+                axisLine: { lineStyle: { color: '#fff' } },
+                // 分隔线设为半透明白色
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'line' }
+            },
+            series: [
+                {
+                    data: [22.4, 18.7, 30.5, 15.2, 12.0, 25.8],
+                    type: 'line',
+                    symbol: 'circle', // 添加数据点标记
+                    symbolSize: 8,
+                    lineStyle: { width: 3, color: '#73C0DE' },
+                    itemStyle: { color: '#73C0DE' }
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+        window.onresize = function() { myChart.resize(); };
+    </script>
+</body>
+</html>
